@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "amundsen.fullname" . }}-{{ .Values.frontEnd.serviceName }}
+  name: {{ template "amundsen.fullname" . }}-test
   labels:
     app: {{ template "amundsen.name" . }}
-    component: {{ .Values.frontEnd.serviceName }}
+    component: test
     chart: {{ template "amundsen.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
@@ -13,9 +13,9 @@ spec:
   selector:
     matchLabels:
       app: {{ template "amundsen.name" . }}
-      component: {{ .Values.frontEnd.serviceName }}
+      component: test
       release: {{ .Release.Name }}
-  replicas: {{ default 1 .Values.frontEnd.replicas }}
+  replicas: 1
   template:
     metadata:
       {{- with default .Values.podAnnotations .Values.frontEnd.podAnnotations }}
@@ -24,7 +24,7 @@ spec:
       {{- end }}
       labels:
         app: {{ template "amundsen.name" . }}
-        component: {{ .Values.frontEnd.serviceName }}
+        component: test
         release: {{ .Release.Name }}
     spec:
       {{- with default .Values.nodeSelector .Values.frontEnd.nodeSelector }}
@@ -44,11 +44,11 @@ spec:
 {{ toYaml .Values.frontEnd.imagePullSecrets | indent 8 }}
     {{- end }}
       containers:
-      - name: {{ .Chart.Name }}-{{ .Values.frontEnd.serviceName }}
-        image: {{ .Values.frontEnd.image }}:{{ .Values.frontEnd.imageTag }}
+      - name: amundsen-test
+        image: nginx:latest
         imagePullPolicy: Always
         ports:
-          - containerPort: 5000
+          - containerPort: 80
         env:
           - name: AWS_ACCESS_KEY_ID
             valueFrom:
@@ -60,34 +60,7 @@ spec:
               secretKeyRef:
                 name: edp-airflow-pipe
                 key: profiles_aws_secret_access_key
-        envFrom:
-          - configMapRef:
-              name: {{ template "amundsen.fullname" . }}-{{ .Values.frontEnd.serviceName }}
-          - configMapRef:
-              name: {{ .Values.metastore.configMapName }}
-          - secretRef:
-              name: {{ .Values.metastore.secretName }}
-        command: ["gunicorn"]
-        args: ['-w', '4', '--bind', ':5000', 'amundsen_application.wsgi']
-        readinessProbe:
-          httpGet:
-            path: "/healthcheck"
-            port: 5000
-          initialDelaySeconds: 10
-          periodSeconds: 60
-          timeoutSeconds: 1
-          successThreshold: 1
-          failureThreshold: 5
-        livenessProbe:
-          httpGet:
-            path: "/healthcheck"
-            port: 5000
-          initialDelaySeconds: 10
-          periodSeconds: 60
-          timeoutSeconds: 1
-          successThreshold: 1
-          failureThreshold: 5
-        {{- with .Values.metadata.resources }}
+        {{- with .Values.amundsentest.resources }}
         resources:
 {{ toYaml . | indent 10 }}
         {{- end }}

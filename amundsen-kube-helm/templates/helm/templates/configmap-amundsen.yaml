@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edp-amundsen-config
+  labels:
+    app: {{ template "amundsen.name" . }}
+    component: neo4j
+    chart: {{ template "amundsen.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  METASTORE_HOST: {{ .Values.metastore.host }}
+  METASTORE_DBNAME: {{ .Values.metastore.dbname }}

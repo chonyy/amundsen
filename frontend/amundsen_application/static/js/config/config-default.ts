@@ -296,11 +296,11 @@ const configDefault: AppConfig = {
     },
   },
   featureLineage: {
-    inAppListEnabled: false,
+    inAppListEnabled: true,
   },
   tableLineage: {
-    inAppListEnabled: false,
-    inAppPageEnabled: false,
+    inAppListEnabled: true,
+    inAppPageEnabled: true,
     externalEnabled: false,
     iconPath: 'PATH_TO_ICON',
     isBeta: false,
@@ -313,8 +313,8 @@ const configDefault: AppConfig = {
       `https://DEFAULT_LINEAGE_URL?schema=${schema}&cluster=${cluster}&db=${database}&table=${table}`,
   },
   columnLineage: {
-    inAppListEnabled: false,
-    inAppPageEnabled: false,
+    inAppListEnabled: true,
+    inAppPageEnabled: true,
     urlGenerator: (
       database: string,
       cluster: string,

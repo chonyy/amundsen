@@ -16,6 +16,7 @@ metadata:
 {{- end}}   
 spec:
   type: {{ .Values.search.serviceType }}
+  externalName: {{ template "amundsen.name" . }}-{{ .Values.search.serviceName }}.{{ .Release.Namespace }}.svc.cluster.local
   selector:
     app: {{ template "amundsen.name" . }}
     component: {{ .Values.search.serviceName }}

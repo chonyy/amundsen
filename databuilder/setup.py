@@ -4,7 +4,7 @@ import os
 
 from setuptools import find_packages, setup
 
-__version__ = '6.3.1'
+__version__ = '1.0.5'
 
 requirements_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'requirements.txt')
 with open(requirements_path) as requirements_file:
@@ -91,12 +91,12 @@ all_deps = requirements + requirements_dev + kafka + cassandra + glue + snowflak
     bigquery + jsonpath + db2 + dremio + druid + spark + feast + neptune + rds + atlas + salesforce + oracle
 
 setup(
-    name='amundsen-databuilder',
+    name='edp-amundsen-databuilder',
     version=__version__,
-    description='Amundsen Data builder',
+    description='EDP Amundsen Data builder',
     url='https://www.github.com/amundsen-io/amundsen/tree/main/databuilder',
-    maintainer='Amundsen TSC',
-    maintainer_email='amundsen-tsc@lists.lfai.foundation',
+    maintainer='Tony Chou',
+    maintainer_email='chonyytony@gmail.com',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     dependency_links=[],

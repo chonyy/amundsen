@@ -16,6 +16,7 @@ metadata:
 {{- end}}   
 spec:
   type: {{ .Values.neo4j.serviceType }}
+  externalName: {{ .Release.Name }}-neo4j.{{ .Release.Namespace }}.svc.cluster.local
   selector:
     app: {{ template "amundsen.name" . }}
     component: neo4j

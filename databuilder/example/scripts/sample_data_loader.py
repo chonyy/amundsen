@@ -47,11 +47,18 @@ from databuilder.transformer.generic_transformer import (
     CALLBACK_FUNCTION, FIELD_NAME, GenericTransformer,
 )
 
+# es_host = 'elasticsearch-amundsen.edp-dev.appier.info'
+# neo_host = 'a271123da1d0b45be9d0e5b048dcd78f-1047741229.ap-southeast-1.elb.amazonaws.com'
+
 es_host = os.getenv('CREDENTIALS_ELASTICSEARCH_PROXY_HOST', 'localhost')
 neo_host = os.getenv('CREDENTIALS_NEO4J_PROXY_HOST', 'localhost')
 
+# es_port = 80
+# neo_port = 7687
+
 es_port = os.getenv('CREDENTIALS_ELASTICSEARCH_PROXY_PORT', 9200)
 neo_port = os.getenv('CREDENTIALS_NEO4J_PROXY_PORT', 7687)
+
 if len(sys.argv) > 1:
     es_host = sys.argv[1]
 if len(sys.argv) > 2:

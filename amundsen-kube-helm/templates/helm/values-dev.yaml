@@ -278,11 +278,11 @@ frontEnd:
 amundsentest:
   resources:
     limits:
-      cpu: 6
-      memory: 8Gi
+      cpu: 2
+      memory: 2Gi
     requests:
-      cpu: 3
-      memory: 4Gi
+      cpu: 1
+      memory: 1Gi
 
 # Configuration related to neo4j.
 neo4j:
@@ -296,22 +296,22 @@ neo4j:
   # resources: {}
   resources:
     limits:
-      cpu: 4
-      memory: 8Gi
-    requests:
       cpu: 2
       memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 3Gi
 
   # neo4j.config -- Neo4j application specific configuration. This type of configuration is why the charts/stable version is not used. See [ref](https://github.com/helm/charts/issues/21439)
   config:
     # neo4j.config.dbms -- dbms config for neo4j
     dbms:
       # neo4j.config.dbms.heap_initial_size -- the initial java heap for neo4j
-      heap_initial_size: 4G
+      heap_initial_size: 2G
       # neo4j.config.dbms.heap_max_size -- the max java heap for neo4j
-      heap_max_size: 5G
+      heap_max_size: 2G
       # neo4j.config.dbms.pagecache_size -- the page cache size for neo4j
-      pagecache_size: 2G
+      pagecache_size: 1G
 
   # neo4j.serviceType -- The neo4j service type. See service types [ref](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)
   serviceType: LoadBalancer
@@ -397,7 +397,7 @@ elasticsearch:
 
 # edp-related config
 ingress:
-  urlNamespace: edp
+  urlNamespace: edp-dev
   ipWhiteList:
       - 61.216.8.103/32    # TPE office - HiNet
 

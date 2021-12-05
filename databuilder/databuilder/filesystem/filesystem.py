@@ -101,8 +101,17 @@ class FileSystem(Scoped):
         :return:
         """
         metadata_dict = self._dask_fs.info(path)
+
+        for key, val in metadata_dict.items():
+            LOGGER.info(f'{str(key)} {str(val)}')
+
+        # Checking for last updated not found
+        last_updated_key = self._metadata_key_mapping[FileSystem.LAST_UPDATED]
+        if(last_updated_key not in metadata_dict):
+            return None
+
         fm = FileMetadata(path=path,
-                          last_updated=metadata_dict[self._metadata_key_mapping[FileSystem.LAST_UPDATED]],
+                          last_updated=metadata_dict[last_updated_key],
                           size=metadata_dict[self._metadata_key_mapping[FileSystem.SIZE]])
         return fm
 

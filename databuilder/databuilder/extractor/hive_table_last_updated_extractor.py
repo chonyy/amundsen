@@ -57,35 +57,66 @@ class HiveTableLastUpdatedExtractor(Extractor):
     table. For partitioned table, it will fetch partition created timestamp, and it's close enough for last updated
     timestamp.
 
-    """
+    # """
+    # PARTITION_TABLE_SQL_STATEMENT = """
+    # SELECT
+    # DBS.NAME as `schema`,
+    # TBL_NAME as table_name,
+    # MAX(PARTITIONS.CREATE_TIME) as last_updated_time
+    # FROM TBLS
+    # JOIN DBS ON TBLS.DB_ID = DBS.DB_ID
+    # JOIN PARTITIONS ON TBLS.TBL_ID = PARTITIONS.TBL_ID
+    # {where_clause_suffix}
+    # GROUP BY `schema`, table_name
+    # ORDER BY `schema`, table_name;
+    # """
+
+    # Postgresql
     PARTITION_TABLE_SQL_STATEMENT = """
     SELECT
-    DBS.NAME as `schema`,
-    TBL_NAME as table_name,
-    MAX(PARTITIONS.CREATE_TIME) as last_updated_time
-    FROM TBLS
-    JOIN DBS ON TBLS.DB_ID = DBS.DB_ID
-    JOIN PARTITIONS ON TBLS.TBL_ID = PARTITIONS.TBL_ID
+    d."NAME" as "schema",
+    t."TBL_NAME" as table_name,
+    MAX(p."CREATE_TIME") as last_updated_time
+    FROM "TBLS" t
+    JOIN "DBS" d ON t."DB_ID" = d."DB_ID"
+    JOIN "PARTITIONS" p ON t."TBL_ID" = p."TBL_ID"
     {where_clause_suffix}
-    GROUP BY `schema`, table_name
-    ORDER BY `schema`, table_name;
+    GROUP BY "schema", table_name
+    ORDER BY "schema", table_name;
     """
 
+    # NON_PARTITIONED_TABLE_SQL_STATEMENT = """
+    # SELECT
+    # DBS.NAME as `schema`,
+    # TBL_NAME as table_name,
+    # SDS.LOCATION as location
+    # FROM TBLS
+    # JOIN DBS ON TBLS.DB_ID = DBS.DB_ID
+    # JOIN SDS ON TBLS.SD_ID = SDS.SD_ID
+    # {where_clause_suffix}
+    # ORDER BY `schema`, table_name;
+    # """
+
+    # Postgresql
     NON_PARTITIONED_TABLE_SQL_STATEMENT = """
     SELECT
-    DBS.NAME as `schema`,
-    TBL_NAME as table_name,
-    SDS.LOCATION as location
-    FROM TBLS
-    JOIN DBS ON TBLS.DB_ID = DBS.DB_ID
-    JOIN SDS ON TBLS.SD_ID = SDS.SD_ID
+    d."NAME" as "schema",
+    t."TBL_NAME" as table_name,
+    s."LOCATION" as location
+    FROM "TBLS" t
+    JOIN "DBS" d ON t."DB_ID" = d."DB_ID"
+    JOIN "SDS" s ON t."SD_ID" = s."SD_ID"
     {where_clause_suffix}
-    ORDER BY `schema`, table_name;
+    ORDER BY "schema", table_name;
     """
 
     # Additional where clause for non partitioned table SQL
-    ADDTIONAL_WHERE_CLAUSE = """ NOT EXISTS (SELECT * FROM PARTITIONS WHERE PARTITIONS.TBL_ID = TBLS.TBL_ID)
-    AND NOT EXISTS (SELECT * FROM PARTITION_KEYS WHERE PARTITION_KEYS.TBL_ID = TBLS.TBL_ID)
+    # ADDTIONAL_WHERE_CLAUSE = """ NOT EXISTS (SELECT * FROM PARTITIONS WHERE PARTITIONS.TBL_ID = TBLS.TBL_ID)
+    # AND NOT EXISTS (SELECT * FROM PARTITION_KEYS WHERE PARTITION_KEYS.TBL_ID = TBLS.TBL_ID)
+    # """
+
+    # Postgresql
+    ADDTIONAL_WHERE_CLAUSE = """ NOT EXISTS (SELECT * FROM "PARTITIONS" p WHERE p."TBL_ID" = t."TBL_ID")
     """
 
     DATABASE = 'hive'
@@ -198,8 +229,10 @@ class HiveTableLastUpdatedExtractor(Extractor):
         :return:
         """
 
+        LOGGER.info('Extracting partitioned table')
         partitioned_tbl_row = self._partitioned_table_extractor.extract()
         while partitioned_tbl_row:
+            LOGGER.info('table %s:%s time:%s', partitioned_tbl_row['schema'], partitioned_tbl_row['table_name'], partitioned_tbl_row['last_updated_time'])
             yield TableLastUpdated(table_name=partitioned_tbl_row['table_name'],
                                    last_updated_time_epoch=partitioned_tbl_row['last_updated_time'],
                                    schema=partitioned_tbl_row['schema'],
@@ -225,7 +258,7 @@ class HiveTableLastUpdatedExtractor(Extractor):
                 table=non_partitioned_tbl_row['table_name'],
                 schema=non_partitioned_tbl_row['schema'],
                 storage_location=non_partitioned_tbl_row['location'])
-            LOGGER.info('Elapsed: %i seconds', time.time() - start)
+            # LOGGER.info('Elapsed: %i seconds', time.time() - start)
 
             if table_last_updated:
                 yield table_last_updated
@@ -248,8 +281,7 @@ class HiveTableLastUpdatedExtractor(Extractor):
         :return:
         """
 
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(f'Getting last updated datetime for {schema}.{table} in {storage_location}')
+        # LOGGER.info(f'Getting last updated datetime for {schema}.{table} in {storage_location}')
 
         last_updated = OLDEST_TIMESTAMP
 
@@ -258,7 +290,7 @@ class HiveTableLastUpdatedExtractor(Extractor):
             LOGGER.info(f'{schema}.{table} does not have any file in path {storage_location}. Skipping')
             return None
 
-        LOGGER.info(f'Fetching metadata for {schema}.{table} of {len(paths)} files')
+        # LOGGER.info(f'Fetching metadata for {schema}.{table} of {len(paths)} files')
 
         if 0 < self._last_updated_filecheck_threshold < len(paths):
             LOGGER.info(f'Skipping {schema}.{table} due to too many files. '
@@ -320,4 +352,5 @@ class HiveTableLastUpdatedExtractor(Extractor):
             return None
 
         file_metadata = self._fs.info(path)
-        return file_metadata.last_updated
+
+        return file_metadata.last_updated if file_metadata else None
